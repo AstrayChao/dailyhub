@@ -1,0 +1,15 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+    <style>        @media (prefers-color-scheme: light) {
+        .bg { fill: #000000; }
+        .text { fill: #fde047; }
+        }
+        @media (prefers-color-scheme: dark) {
+        .bg { fill: #fde047; }
+        .text { fill: #000000; }
+        }
+    </style>
+    <circle cx="16" cy="16" r="16" class="bg" />
+    <text x="16" y="22" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" font-weight="bold" class="text">
+        DH
+    </text>
+</svg>

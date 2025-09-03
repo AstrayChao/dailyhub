@@ -1,81 +1,81 @@
-"use client";
+'use client';
 
-import { FC } from "react";
-import { VisuallyHidden } from "@react-aria/visually-hidden";
-import { SwitchProps, useSwitch } from "@heroui/switch";
-import { useTheme } from "next-themes";
-import { useIsSSR } from "@react-aria/ssr";
-import clsx from "clsx";
+import { motion } from 'framer-motion';
+import { Monitor, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/dropdown";
+import { Button } from "@heroui/button";
 
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+const mode = {
+    light: {
+        icon: <Sun size={22} />,
+        text: '浅色模式',
+    },
+    dark: {
+        icon: <Moon size={22} />,
+        text: '深色模式',
+    },
+    system: {
+        icon: <Monitor size={22} />,
+        text: '跟随系统'
+    },
+};
 
-export interface ThemeSwitchProps {
-  className?: string;
-  classNames?: SwitchProps["classNames"];
-}
-
-export const ThemeSwitch: FC<ThemeSwitchProps> = ({
-  className,
-  classNames,
+export const ThemeSwitch = ({
+                                radius,
+                            }: {
+    radius?: 'none' | 'full' | 'sm' | 'md' | 'lg' | undefined;
 }) => {
-  const { theme, setTheme } = useTheme();
-  const isSSR = useIsSSR();
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
 
-  const onChange = () => {
-    theme === "light" ? setTheme("dark") : setTheme("light");
-  };
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
-  const {
-    Component,
-    slots,
-    isSelected,
-    getBaseProps,
-    getInputProps,
-    getWrapperProps,
-  } = useSwitch({
-    isSelected: theme === "light" || isSSR,
-    "aria-label": `Switch to ${theme === "light" || isSSR ? "dark" : "light"} mode`,
-    onChange,
-  });
+    const currentTheme = (theme as keyof typeof mode) || 'system';
+    const themeIcon = mode[currentTheme]?.icon || mode.system.icon;
 
-  return (
-    <Component
-      {...getBaseProps({
-        className: clsx(
-          "px-px transition-opacity hover:opacity-80 cursor-pointer",
-          className,
-          classNames?.base,
-        ),
-      })}
-    >
-      <VisuallyHidden>
-        <input {...getInputProps()} />
-      </VisuallyHidden>
-      <div
-        {...getWrapperProps()}
-        className={slots.wrapper({
-          class: clsx(
-            [
-              "w-auto h-auto",
-              "bg-transparent",
-              "rounded-lg",
-              "flex items-center justify-center",
-              "group-data-[selected=true]:bg-transparent",
-              "!text-default-500",
-              "pt-px",
-              "px-0",
-              "mx-0",
-            ],
-            classNames?.wrapper,
-          ),
-        })}
-      >
-        {!isSelected || isSSR ? (
-          <SunFilledIcon size={22} />
-        ) : (
-          <MoonFilledIcon size={22} />
-        )}
-      </div>
-    </Component>
-  );
+    if (!mounted) {
+        return (
+            <Button isIconOnly variant="light" radius={radius} className="text-default-500">
+                <Monitor size={22} />
+            </Button>
+        );
+    }
+
+    return (
+        <Dropdown aria-label="Switch Theme">
+            <DropdownTrigger>
+                <Button isIconOnly variant="light" radius={radius} className="text-default-500">
+                    {currentTheme === 'system' ? (
+                        <div key={currentTheme}>{themeIcon}</div>
+                    ) : (
+                        <motion.div
+                            key={currentTheme}
+                            initial={{ rotate: -90, opacity: 0 }}
+                            animate={{ rotate: 0, opacity: 1 }}
+                            exit={{ rotate: 90, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {themeIcon}
+                        </motion.div>
+                    )}
+                </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Switch Theme" variant="faded">
+                {Object.entries(mode).map(([key, value]) => (
+                    <DropdownItem
+                        key={key}
+                        startContent={<div className="w-6 h-6">{value.icon}</div>}
+                        onPress={() => setTheme(key)}
+                        className="flex flex-row items-center gap-2 dark:text-default-700 dark:hover:text-white"
+                    >
+                        {value.text}
+                    </DropdownItem>
+                ))}
+            </DropdownMenu>
+        </Dropdown>
+    );
 };
